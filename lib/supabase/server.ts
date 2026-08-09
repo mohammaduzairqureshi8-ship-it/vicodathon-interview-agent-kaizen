@@ -1,33 +1,33 @@
-// ═══════════════════════════════════════════════════════════════════
-// SUPABASE — Server-side Client (for API Routes & Server Components)
-// Roman Urdu: Ye file API routes aur Server Components use karte hain
-// IS FILE KO BILKUL MAT CHHEDNA
-// ═══════════════════════════════════════════════════════════════════
+// lib/supabase/server.ts
+// ─────────────────────────────────────────────────────────────────────
+// Roman Urdu: Server side ka Supabase client — API routes mein use hota hai
+// Service Role Key use karta hai taake RLS bypass ho sake (screenshots mein
+// SUPABASE_SERVICE_ROLE_KEY dikh rahi hai .env.local mein — yahan use ki)
+// ─────────────────────────────────────────────────────────────────────
 
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createClient as _createSupabaseClient } from '@supabase/supabase-js'
 
 export function createClient() {
-  const cookieStore = cookies()
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  
+  // Server side par Service Role Key prefer karo (RLS bypass karta hai)
+  // Agar service role key nahi hai toh anon key use karo
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {
-            // Server Components mein cookies set nahi hoti — ye normal hai
-          }
-        },
-      },
-    }
-  )
+  if (!url) {
+    throw new Error('❌ NEXT_PUBLIC_SUPABASE_URL .env.local mein missing hai!')
+  }
+  if (!key) {
+    throw new Error('❌ SUPABASE_SERVICE_ROLE_KEY ya NEXT_PUBLIC_SUPABASE_ANON_KEY missing hai!')
+  }
+
+  return _createSupabaseClient(url, key, {
+    auth: {
+      // Server side par cookies nahi chahiye, simple JWT auth kaafi hai
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  })
 }

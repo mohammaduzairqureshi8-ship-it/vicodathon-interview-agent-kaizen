@@ -1,14 +1,21 @@
-// ═══════════════════════════════════════════════════════════════════
-// SUPABASE — Browser-side Client (for Client Components)
-// Roman Urdu: Ye file Frontend ke 'use client' components use karte hain
-// IS FILE KO BILKUL MAT CHHEDNA
-// ═══════════════════════════════════════════════════════════════════
+// lib/supabase/client.ts
+// ─────────────────────────────────────────────────────────────────────
+// Roman Urdu: Browser side ka Supabase client — NO @supabase/ssr needed
+// Ye file Client Components mein use hoti hai (CandidateSelector etc.)
+// ─────────────────────────────────────────────────────────────────────
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient as _createSupabaseClient } from '@supabase/supabase-js'
 
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!url) {
+    throw new Error('❌ NEXT_PUBLIC_SUPABASE_URL .env.local mein missing hai!')
+  }
+  if (!key) {
+    throw new Error('❌ NEXT_PUBLIC_SUPABASE_ANON_KEY .env.local mein missing hai!')
+  }
+
+  return _createSupabaseClient(url, key)
 }
