@@ -1,7 +1,7 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  // Roman Urdu: Koi extra configuration nahi chahiye abhi
+}
 
-export default nextConfig;
+export default nextConfig
